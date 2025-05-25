@@ -52,28 +52,71 @@ void RPN::calculateOperation(std::stack<int> &stack, char const op)
 
 int RPN::calculate(std::string expression)
 {
-	std::string str = "0123456789+-*/% ";
-	std::stack<int> stack;
-	std::string::iterator it = expression.begin();
+    std::istringstream iss(expression);
+    std::string token;
+    std::stack<int> stack;
 
-	while (it != expression.end())
-	{
-		if (str.find(*it) == std::string::npos)
-			throw InvalidExpression();
-		if (*it != ' ')
-		{
-			if (isdigit(*it) || (*it == '-' && isdigit(*(it + 1))))
-				stack.push(atoi(&(*it)));
-			else if (*it == '+' || *it == '-' || *it == '*' || *it == '/' || *it == '%')
-				calculateOperation(stack, *it);
-			else
-				throw InvalidExpression();
-		}
-		it++;
-	}
-	if (stack.size() != 1)
-		throw InvalidExpression();
-	return stack.top();
+    while (iss >> token)
+    {
+        bool isNumber = true;
+        size_t i = 0;
+
+        if (token.empty())
+            throw InvalidExpression();
+        if (token[0] == '-')
+            i = 1;
+        if (i == token.length())
+            isNumber = false;
+
+        while (i < token.length())
+        {
+            if (!isdigit(token[i]))
+            {
+                isNumber = false;
+                break;
+            }
+            ++i;
+        }
+        if (isNumber)
+            stack.push(atoi(token.c_str()));
+        else if (token == "+" || token == "-" || token == "*" || token == "/" || token == "%")
+        {
+            if (stack.size() < 2)
+                throw InvalidExpression();
+            int b = stack.top(); stack.pop();
+            int a = stack.top(); stack.pop();
+
+            int result;
+
+            switch (token[0])
+            {
+                case '+': result = a + b; break;
+                case '-': result = a - b; break;
+                case '*': result = a * b; break;
+                case '/':
+                    if (b == 0)
+                        throw InvalidExpression();
+                    result = a / b;
+                    break;
+                case '%':
+                    if (b == 0)
+                        throw InvalidExpression();
+                    result = a % b;
+                    break;
+                default:
+                    throw InvalidExpression();
+            }
+
+            stack.push(result);
+        }
+        else
+            throw InvalidExpression();
+        }
+
+    if (stack.size() != 1)
+        throw InvalidExpression();
+
+    return stack.top();
 }
 
 const char *RPN::InvalidExpression::what() const throw()
