@@ -90,13 +90,18 @@ void BitcoinExchange::execute(std::string const &filename)
 		std::map<std::string, std::string>::iterator it = _data.find(date);
 		std::string previousdate = date;
 
-		while (it == _data.end())
+		while (it == _data.end()) 
 		{
-			std::string newdate = previousdate;
-			previousdate = this->previousdate(previousdate);
-			it = _data.find(previousdate);
+    		previousdate = this->previousdate(previousdate);
+    		if (previousdate < _data.begin()->first) 
+			{
+        		std::cerr << "Error: no earlier date found in database." << std::endl;
+        		break;
+    		}
+    		it = _data.find(previousdate);
 		}
-
+		if (it == _data.end())
+			continue;
 		std::cout << date << " => " << value << " = " << ft_stod(it->second) * ft_stod(value) << std::endl;
 	}
 }
