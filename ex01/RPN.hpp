@@ -9,11 +9,6 @@
 class RPN
 {
 	public:
-		RPN();
-		~RPN();
-		RPN(RPN const &obj);
-		RPN & operator=(RPN const &rhs);
-
 		static int calculate(std::string expression);
 
 		class InvalidExpression : public std::exception
@@ -29,8 +24,10 @@ class RPN
 		};
 	
 	private:
-
-		static void calculateOperation(std::stack<int> &, char const );
+		RPN();
+		~RPN();
+		RPN(RPN const &obj);
+		RPN & operator=(RPN const &rhs);
 
 };
 

@@ -18,38 +18,6 @@ RPN & RPN::operator=(RPN const &rhs)
 	return *this;
 }
 
-void RPN::calculateOperation(std::stack<int> &stack, char const op)
-{
-	if (stack.size() < 2)
-		throw InvalidExpression();
-	int a = stack.top();
-	stack.pop();
-	int b = stack.top();
-	stack.pop();
-	switch (op)
-	{
-		case '+':
-			stack.push(b + a);
-			break;
-		case '-':
-			stack.push(b - a);
-			break;
-		case '*':
-			stack.push(b * a);
-			break;
-		case '/':
-			if (a == 0)
-				throw InvalidValue();
-			stack.push(b / a);
-			break;
-		case '%':
-			if (a == 0)
-				throw InvalidValue();
-			stack.push(b % a);
-			break;
-	}
-}
-
 int RPN::calculate(std::string expression)
 {
     std::istringstream iss(expression);
