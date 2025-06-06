@@ -7,84 +7,88 @@
 #include <algorithm>
 #include <sstream>
 #include <ostream>
+#include <stdexcept>
+#include <ctime>
 
 template <typename Container>
-
-bool is_duplicate(Container const &c, int value) {
-	return std::find(c.begin(), c.end(), value) != c.end();
+bool is_duplicate(Container const &c, int value) 
+{
+    return std::find(c.begin(), c.end(), value) != c.end();
 }
 
 template <typename Container>
-void mergeInsertionSort(Container &values)
+void fillJacobsthalIndices(Container &indices, int size) 
 {
-	// base case
-	if (values.size() <= 1)
-		return;
-	// split the container into two halves
-	Container left(values.begin(), values.begin() + values.size() / 2);
-	Container right(values.begin() + values.size() / 2, values.end());
-	// sort the two halves
-	mergeInsertionSort(left);
-	mergeInsertionSort(right);
+    Container jacob;
+    jacob.push_back(0);
+    jacob.push_back(1);
 
-	// merge the two halves
-	Container result;
-	typename Container::const_iterator leftIt = left.begin();
-	typename Container::const_iterator rightIt = right.begin();
-	while (leftIt != left.end() && rightIt != right.end())
+    int j = 2;
+    while (true) 
 	{
-		if (*leftIt < *rightIt)
-		{
-			result.push_back(*leftIt);
-			++leftIt;
-		}
-		else
-		{
-			result.push_back(*rightIt);
-			++rightIt;
-		}
-	}
-	// copy the remaining elements
-	while (leftIt != left.end())
+        int next = jacob[j - 1] + 2 * jacob[j - 2];
+        if (next >= size)
+            break;
+        jacob.push_back(next);
+        ++j;
+    }
+
+    if (size > 0)
+        indices.push_back(0);
+
+    for (int i = static_cast<int>(jacob.size()) - 1; i > 0; --i) 
 	{
-		result.push_back(*leftIt);
-		++leftIt;
-	}
-	while (rightIt != right.end())
-	{
-		result.push_back(*rightIt);
-		++rightIt;
-	}
-	values = result;
+        int start = jacob[i];
+        int end = (i + 1 < static_cast<int>(jacob.size())) ? jacob[i + 1] : size;
+        for (int k = start; k < end && k < size; ++k)
+            indices.push_back(k);
+    }
 }
 
 template <typename Container>
 Container fill_container(const char **str) 
 {
-	Container c;
-	int i = 0;
-	while (str[i])
+    Container c;
+    int i = 0;
+    while (str[i]) 
 	{
-		int value;
-		std::stringstream ss;
-		ss << str[i];
-		ss >> value;
-		if (is_duplicate(c, value) || value < 0)
-		{
-			throw 1;
-		}
-		else if (ss.fail())
-		{
-			throw 2;
-		}
-		c.push_back(value);
-		i++;
-	}
-	return c;
+        int value;
+        std::stringstream ss;
+        ss << str[i];
+        ss >> value;
+        if (ss.fail())
+            throw std::invalid_argument("Non-integer input");
+        if (is_duplicate(c, value) || value < 0)
+            throw std::runtime_error("Negative or duplicate value");
+        c.push_back(value);
+        i++;
+    }
+    return c;
 }
 
-std::ostream &operator<<(std::ostream &os, std::deque<int> const &l);
+class PmergeMe 
+{
+	private:
+		std::vector<int> _vector;
+		std::deque<int> _deque;
+
+	public:
+		PmergeMe();
+		PmergeMe(const PmergeMe &other);
+		PmergeMe &operator=(const PmergeMe &other);
+		~PmergeMe();
+
+		void fill(const char **av);
+		void sortAndDisplay();
+
+	private:
+		void mergeInsertionSortVector(std::vector<int> &values);
+		void mergeInsertionSortDeque(std::deque<int> &values);
+		std::vector<int> generateJacobsthalIndicesVector(int size);
+		std::deque<int> generateJacobsthalIndicesDeque(int size);
+};
 
 std::ostream &operator<<(std::ostream &os, std::vector<int> const &v);
+std::ostream &operator<<(std::ostream &os, std::deque<int> const &d);
 
 #endif
